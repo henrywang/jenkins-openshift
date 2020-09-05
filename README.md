@@ -56,6 +56,7 @@ subscribed RHEL machine.
     $ make build TARGET=rhel7 VERSION=2
     ```
 
+<<<<<<< HEAD
 You can also run the build using Podman. However, e2e tests does not run  
 with Podman (which is the default).
     ```
@@ -72,6 +73,17 @@ registry and requires credentials for access.  See [Transitioning the Red Hat co
 The openshift cluster install for 3.11 will ensure that credentials are provided and subsequently available on the nodes
 in the cluster to facilitate image pulling.
 
+=======
+    Also note, as of 3.11, the RHEL images are hosted at registry.redhat.io as well.  This is the terms based 
+    registry and requires credentials for access.  See [Transitioning the Red Hat container registry](https://www.redhat.com/en/blog/transitioning-red-hat-container-registry) for details:
+    * registry.redhat.io/openshift3/jenkins-2-rhel7:v3.11
+    * registry.redhat.io/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11
+    * registry.redhat.io/openshift3/jenkins-agent-maven-35-rhel7:v3.11
+    * registry.redhat.io/openshift3/jenkins-slave-base-rhel7:v3.11
+    
+    The openshift cluster install for 3.11 will insure that credentials are provided and subsequently available on the nodes
+    in the cluster to facilitate image pulling.
+>>>>>>> upstream/openshift-3.11
 
 *  **CentOS7 based image**
 
@@ -203,10 +215,12 @@ OpenShift API server.  In other words, you should use the version specific tag i
 |  `jenkins-*-rhel7:latest`   | 3.6 `oc` binary \*\*     |
 
 
-**Notice: the `latest` tag for the RHEL7 images will point to 3.6 indefinitely in order to support users on older clusters with older slave
+**Notice: The `latest` tag for the RHEL7 images will point to 3.6 indefinitely in order to support users on older clusters with older slave
 configurations that point to the "latest" tag.  This way, they will have an older `oc` client which should be able to communicate with both 3.6
 and newer versions of OpenShift API Servers.  As the support policy is less stringent for the CentOS7 image, the `latest` tag there will
 make the more obvious correlation to the latest built version of OpenShift (which can include pre-GA versions).
+
+**Notice: The Jenkins "Global Tool Configuration" panel is the most convenient avenue for bringing in different version of `oc` into Jenkins.  The binary archives for the different releases of `oc` are available at https://github.com/openshift/origin/releases.
 
 **Notice:  There is an additional consideration with the pod configurations for the Kubernetes Plugin; earlier versions of this image
 did not specify the "pull always" policy for the default agents/slaves configured.  As a result, users may have older/different images on
@@ -214,6 +228,7 @@ your nodes depending when the images were pulled.  Starting with the 3.7 release
 in the future.  But if you started using this image prior to 3.7, verification of your Kubernetes plugin configurations for the image pull
 policy used is warranted to guarantee consistency around what image is being used on each of your nodes.
 
+<<<<<<< HEAD
 The `oc` binary is still included in the v4 images as well.  And the same recommendations around client/server version synchronization still apply.
 
 Jenkins security advisories, the "master" image from this repository, and the `oc` binary
@@ -231,6 +246,19 @@ Our OpenShift Client Plugin has some documentation on doing this [here](https://
 Also note for the RHEL image, the v3.11 image examines whether it is running in an OpenShift Pod and what version the cluster is at.  If the cluster is at a version prior to v3.11, the Maven and NodeJS agent example configuration for the kubernetes plugin will point to registry.access.redhat.com for
 the image setting.  If the cluster is at v3.11, the image setting will point to the terms based registry at registry.access.io.
 
+=======
+Jenkins security advisories, the "master" image from this repository, and the `oc` binary
+---------------------------------
+
+Any security advisory related updates to Jenkins core or the plugins we include in the OpenShift Jenkins master image will only occur in the v3.11 and v4.x branches of this repository.
+
+We do support running the v3.11 version of the master image against older v3.x (as far back as v3.4) OpenShift clusters if you want to pick up Jenkins security advisory updates.  Per the prior section, we advise that you import a version of `oc` into your Jenkins installation that matches your OpenShift cluster via the "Global Tool Configuration" option in Jenkins either via the UI, CLI, or groovy init scripts.
+
+Our OpenShift Client Plugin has some documentation on doing this [here](https://github.com/openshift/jenkins-client-plugin#setting-up-jenkins-nodes).
+
+Also note for the RHEL image, the v3.11 image examines whether it is running in an OpenShift Pod and what version the cluster is at.  If the cluster is at a version prior to v3.11, the Maven and NodeJS agent example configuration for the kubernetes plugin will point to registry.access.redhat.com for 
+the image setting.  If the cluster is at v3.11, the image setting will point to the terms based registry at registry.access.io.
+>>>>>>> upstream/openshift-3.11
 
 Plugins
 ---------------------------------

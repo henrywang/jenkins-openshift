@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ##############################################
 # Stage 1 : Build go-init
 ##############################################
@@ -13,6 +14,11 @@ RUN go build . && cp go-init /usr/bin
 FROM quay.io/openshift/origin-cli
 MAINTAINER Akram Ben Aissi <abenaiss@redhat.com>
 COPY --from=go-init-builder /usr/bin/go-init /usr/bin/go-init
+=======
+FROM registry.access.redhat.com/openshift3/ose-cli:v3.11
+
+MAINTAINER OpenShift Developer Services <jenkins+openshift-dev-services@redhat.com>
+>>>>>>> upstream/openshift-3.11
 
 # Labels consumed by Red Hat build service
 LABEL com.redhat.component="jenkins-slave-base-rhel7-container" \
@@ -29,9 +35,21 @@ ENV HOME=/home/jenkins \
 
 USER root
 # Install headless Java
+<<<<<<< HEAD
 RUN INSTALL_PKGS="bc gettext git java-11-openjdk-headless java-1.8.0-openjdk-headless lsof rsync tar unzip which zip bzip2 jq" && \
     yum install -y --setopt=tsflags=nodocs --disableplugin=subscription-manager $INSTALL_PKGS && \
     rpm -V  $INSTALL_PKGS && \
+=======
+# run yum update to avoid package version mismatch between i686 and other archs
+RUN x86_EXTRA_RPMS=$(if [ "$(uname -m)" == "x86_64" ]; then echo -n java-11-openjdk-headless.i686 ; fi) && \
+    INSTALL_PKGS="bc gettext git java-11-openjdk-headless lsof rsync tar unzip which zip bzip2 nss_wrapper dumb-init" && \
+    yum-config-manager --disable rhel-7-server-htb-rpms  > /dev/null && \
+    yum-config-manager --enable rhel-server-rhscl-7-rpms > /dev/null &&  \
+    yum-config-manager --enable rhel-7-server-ose-3.11-rpms > /dev/null && \
+    yum -y update && \
+    yum --setopt=protected_multilib=false --setopt=tsflags=nodocs install -y $INSTALL_PKGS $x86_EXTRA_RPMS && \
+    rpm -V  $INSTALL_PKGS $x86_EXTRA_RPMS && \
+>>>>>>> upstream/openshift-3.11
     yum clean all && \
     mkdir -p /home/jenkins && \
     chown -R 1001:0 /home/jenkins && \
@@ -42,8 +60,12 @@ RUN INSTALL_PKGS="bc gettext git java-11-openjdk-headless java-1.8.0-openjdk-hea
     chmod 775 /usr/bin && \
     chmod 775 /usr/lib/jvm-exports && \
     chmod 775 /usr/share/man/man1 && \
+<<<<<<< HEAD
     mkdir -p /var/lib/origin && \
     chmod 775 /var/lib/origin && \    
+=======
+    chmod 775 /var/lib/origin && \ 
+>>>>>>> upstream/openshift-3.11
     unlink /usr/bin/java && \
     unlink /usr/bin/jjs && \
     unlink /usr/bin/keytool && \
@@ -51,7 +73,6 @@ RUN INSTALL_PKGS="bc gettext git java-11-openjdk-headless java-1.8.0-openjdk-hea
     unlink /usr/bin/rmid && \
     unlink /usr/bin/rmiregistry && \
     unlink /usr/bin/unpack200 && \
-    unlink /usr/lib/jvm-exports/jre && \
     unlink /usr/share/man/man1/java.1.gz && \
     unlink /usr/share/man/man1/jjs.1.gz && \
     unlink /usr/share/man/man1/keytool.1.gz && \
@@ -62,10 +83,13 @@ RUN INSTALL_PKGS="bc gettext git java-11-openjdk-headless java-1.8.0-openjdk-hea
 
 # Copy the entrypoint
 ADD contrib/bin/* /usr/local/bin/
-
 # Run the Jenkins JNLP client
+<<<<<<< HEAD
 ENTRYPOINT ["/usr/bin/go-init", "-main", "/usr/local/bin/run-jnlp-client"]
 
 ##############################################
 # End
 ##############################################
+=======
+ENTRYPOINT ["/usr/bin/dumb-init", "--", "/usr/local/bin/run-jnlp-client"]
+>>>>>>> upstream/openshift-3.11

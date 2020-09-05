@@ -2,7 +2,7 @@ FROM openshift/jenkins-slave-base-centos7:v3.11
 
 MAINTAINER OpenShift Developer Services <jenkins+openshift-dev-services@redhat.com>
 
-ENV NODEJS_VERSION=10 \
+ENV NODEJS_VERSION=12 \
     NPM_CONFIG_PREFIX=$HOME/.npm-global \
     PATH=$HOME/node_modules/.bin/:$HOME/.npm-global/bin/:$PATH \
     BASH_ENV=/usr/local/bin/scl_enable \
@@ -20,7 +20,7 @@ RUN curl https://raw.githubusercontent.com/cloudrouter/centos-repo/master/CentOS
     ln -s /usr/lib/node_modules/nodemon/bin/nodemon.js /usr/bin/nodemon && \
     yum install -y --setopt=tsflags=nodocs --disableplugin=subscription-manager $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
-    curl -sL https://rpm.nodesource.com/setup_10.x | bash - && \
+    curl -sL https://rpm.nodesource.com/setup_12.x | bash - && \
     yum install -y --setopt=tsflags=nodocs --disableplugin=subscription-manager nodejs && \
     rpm -V nodejs && \
     yum clean all -y 

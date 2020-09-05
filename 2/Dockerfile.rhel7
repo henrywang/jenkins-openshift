@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ##############################################
 # Stage 1 : Build go-init
 ##############################################
@@ -13,6 +14,9 @@ RUN go build . && cp go-init /usr/bin
 FROM quay.io/openshift/origin-cli
 MAINTAINER Akram Ben Aissi <abenaiss@redhat.com>
 COPY --from=go-init-builder /usr/bin/go-init /usr/bin/go-init
+=======
+FROM registry.access.redhat.com/openshift3/ose-cli:v3.11
+>>>>>>> upstream/openshift-3.11
 
 # Jenkins image for OpenShift
 #
@@ -24,7 +28,11 @@ COPY --from=go-init-builder /usr/bin/go-init /usr/bin/go-init
 # Environment:
 # * $JENKINS_PASSWORD - Password for the Jenkins 'admin' user.
 
+<<<<<<< HEAD
 MAINTAINER Akram Ben Aissi <abenaiss@redhat.com>
+=======
+MAINTAINER OpenShift Developer Services <jenkins+openshift-dev-services@redhat.com>
+>>>>>>> upstream/openshift-3.11
 
 ENV JENKINS_VERSION=2 \
     HOME=/var/lib/jenkins \
@@ -55,6 +63,7 @@ LABEL com.redhat.component="openshift-jenkins-2-container" \
 # 8080 for main web interface, 50000 for slave agents
 EXPOSE 8080 50000
 
+<<<<<<< HEAD
 # for backward compatibility with pre-3.6 installs leveraging a PV, where rpm installs went to /usr/lib64/jenkins, we are
 # establishing a symbolic link for that guy as well, so that existing plugins in JENKINS_HOME/plugins pointing to 
 # /usr/lib64/jenkins will subsequently get redirected to /usr/lib/jenkins; it is confirmed that the 3.7 jenkins RHEL images 
@@ -63,6 +72,22 @@ RUN ln -s /usr/lib/jenkins /usr/lib64/jenkins && \
     INSTALL_PKGS="dejavu-sans-fonts wget rsync gettext git tar zip unzip openssl bzip2 java-11-openjdk java-11-openjdk-devel java-1.8.0-openjdk java-1.8.0-openjdk-devel jq" && \
     yum install -y $INSTALL_PKGS && \
     rpm -V  $INSTALL_PKGS && \
+=======
+RUN yum-config-manager --disable rhel-7-server-htb-rpms  > /dev/null && \
+    yum-config-manager --enable rhel-server-rhscl-7-rpms > /dev/null &&  \
+    yum-config-manager --enable rhel-7-server-ose-3.11-rpms > /dev/null &&  \
+    yum-config-manager --enable rhel-7-server-ose-onlineint-rpms || : && \
+    # for backward compatibility with pre-3.6 installs leveraging a PV, where rpm installs went to /usr/lib64/jenkins, we are
+    # establishing a symbolic link for that guy as well, so that existing plugins in JENKINS_HOME/plugins pointing to /usr/lib64/jenkins
+    # will subsequently get redirected to /usr/lib/jenkins; it is confirmed that the 3.7 jenkins RHEL images do *NOT* have a /usr/lib64/jenkins path
+    ln -s /usr/lib/jenkins /usr/lib64/jenkins && \
+    #run yum update to avoid package version mismatch between i686 and other archs
+    yum -y update && \
+    x86_EXTRA_RPMS=$(if [ "$(uname -m)" == "x86_64" ]; then echo -n java-11-openjdk.i686 java-11-openjdk-devel.i686 ; fi) && \
+    INSTALL_PKGS="dejavu-sans-fonts wget rsync gettext git tar zip unzip openssl bzip2 java-11-openjdk java-11-openjdk-devel atomic-openshift-clients jenkins-2.* jenkins-2-plugins nss_wrapper dumb-init" && \
+    yum --setopt=protected_multilib=false -y install $INSTALL_PKGS $x86_EXTRA_RPMS && \
+    rpm -V  $INSTALL_PKGS $x86_EXTRA_RPMS && \
+>>>>>>> upstream/openshift-3.11
     yum clean all  && \
     localedef -f UTF-8 -i en_US en_US.UTF-8
 
@@ -71,8 +96,20 @@ COPY ./contrib/jenkins /usr/local/bin
 ADD ./contrib/s2i /usr/libexec/s2i
 ADD release.version /tmp/release.version
 
+<<<<<<< HEAD
 RUN /usr/local/bin/install-jenkins-core-plugins.sh /opt/openshift/base-plugins.txt && \
     rmdir /var/log/jenkins && \
+=======
+# Remove the base-plugins.txt file because it's only used for Centos
+# and its presence in the rhel image is confusing.
+RUN rm /opt/openshift/base-plugins.txt && \ 
+    mkdir -p /opt/openshift/plugins && \
+    # we symlink the rpm installed plugins from /usr/lib/jenkins to /opt/openshift/plugins so that
+    # future upgrades of the image and their RPM install automatically get picked by jenkins;
+    # we use symlinks vs. actual files to delineate whether the user has overridden a plugin (and
+    # by extension taken over its future maintenance)
+    for FILENAME in /usr/lib/jenkins/*hpi ; do ln -s $FILENAME /opt/openshift/plugins/`basename $FILENAME .hpi`.jpi; done &&\
+>>>>>>> upstream/openshift-3.11
     chmod -R 775 /etc/alternatives && \
     chmod -R 775 /var/lib/alternatives && \
     chmod -R 775 /usr/lib/jvm && \

@@ -8,9 +8,14 @@ reviewers:
 approvers:
 - bparees
 - gabemontero
+<<<<<<< HEAD
 - adambkaplan
 - akram
 - waveywaves
 - otaviof
 - sbose78
 - akashshinde
+=======
+- akram
+- waveywaves
+>>>>>>> upstream/openshift-3.11

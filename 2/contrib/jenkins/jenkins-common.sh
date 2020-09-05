@@ -9,6 +9,20 @@ export AUTH_TOKEN=${KUBE_SA_DIR}/token
 export JENKINS_PASSWORD KUBERNETES_SERVICE_HOST KUBERNETES_SERVICE_PORT
 export ITEM_ROOTDIR="\${ITEM_ROOTDIR}" # Preserve this variable Jenkins has in config.xml
 
+<<<<<<< HEAD
+=======
+# Generate passwd file based on current uid and use NSS_WRAPPER to set it
+function generate_passwd_file() {
+  export USER_ID=$(id -u)
+  export GROUP_ID=$(id -g)
+  grep -v -e ^default -e ^$USER_ID /etc/passwd > "$HOME/passwd"
+  echo "default:x:${USER_ID}:${GROUP_ID}:Default Application User:${HOME}:/sbin/nologin" >> "$HOME/passwd"
+  export LD_PRELOAD=libnss_wrapper.so
+  export NSS_WRAPPER_PASSWD=${HOME}/passwd
+  export NSS_WRAPPER_GROUP=/etc/group
+}
+
+>>>>>>> upstream/openshift-3.11
 # Takes a password and an optional salt value, outputs the hashed password.
 function obfuscate_password {
     local password="$1"

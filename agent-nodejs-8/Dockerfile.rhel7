@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 FROM quay.io/openshift/origin-jenkins-agent-base:v4.0
 
 MAINTAINER Akram Ben Aissi <abenaiss@redhat.com>
+=======
+FROM registry.access.redhat.com/openshift3/jenkins-slave-base-rhel7:v3.11
+
+MAINTAINER OpenShift Developer Services <jenkins+openshift-dev-services@redhat.com>
+>>>>>>> upstream/openshift-3.11
 
 # Labels consumed by Red Hat build service
 LABEL com.redhat.component="jenkins-agent-nodejs-8-rhel7-container" \
@@ -9,7 +15,8 @@ LABEL com.redhat.component="jenkins-agent-nodejs-8-rhel7-container" \
       architecture="x86_64" \
       io.k8s.display-name="Jenkins Agent Nodejs" \
       io.k8s.description="The jenkins agent nodejs image has the nodejs tools on top of the jenkins slave base image." \
-      io.openshift.tags="openshift,jenkins,agent,nodejs"
+      io.openshift.tags="openshift,jenkins,agent,nodejs" \
+       maintainer="openshift-dev-services+jenkins@redhat.com"
 
 ENV NODEJS_VERSION=8 \
     NPM_CONFIG_PREFIX=$HOME/.npm-global \

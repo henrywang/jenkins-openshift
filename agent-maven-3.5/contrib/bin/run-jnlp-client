@@ -13,24 +13,19 @@ export JENKINS_HOME=/home/jenkins
 # Make sure the Java clients have valid $HOME directory set
 export HOME=${JENKINS_HOME}
 
-export JAVA_VERSION=${USE_JAVA_VERSION:=java-11}
+source /usr/local/bin/generate_container_user
 
 CONTAINER_MEMORY_IN_BYTES=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
 CONTAINER_MEMORY_IN_MB=$((CONTAINER_MEMORY_IN_BYTES/2**20))
 
-<<<<<<< HEAD
-if [[ "$(uname -m)" == "x86_64" ]]; then
-	alternatives --set java $(alternatives --display java | grep $JAVA_VERSION | awk '/family.*x86_64/ { print $1; }')
-	alternatives --set javac $(alternatives --display javac | grep $JAVA_VERSION | awk '/family.*x86_64/ { print $1; }')
-#set JVM for all other archs
-else
-  alternatives --set java $(alternatives --display java | grep $JAVA_VERSION | awk '/family.*'$(uname -m)'/ { print $1; }')
-  alternatives --set javac $(alternatives --display javac | grep $JAVA_VERSION | awk '/family.*'$(uname -m)'/ { print $1; }')
-=======
 
 # java version is by default set to java-11. If a regression is faced, we must inject 
 # the USE_JAVA_VERSION=java-1.8.0 into the container agent so, the agent can use it
-export JAVA_VERSION=${USE_JAVA_VERSION:=java-11}
+#export JAVA_VERSION=${USE_JAVA_VERSION:=java-11}
+#export JAVAC_VERSION=${USE_JAVAC_VERSION:=java-11}
+
+export JAVA_VERSION=${USE_JAVA_VERSION:=java-1.8.0}
+export JAVAC_VERSION=${USE_JAVAC_VERSION:=java-1.8.0}
 
 # multi-arch check ... if x86_64, pick between 32 and 64 bit 
 if [[ "$(uname -m)" == "x86_64" ]]; then
@@ -39,21 +34,21 @@ if [[ "$(uname -m)" == "x86_64" ]]; then
     if [[ "${OPENSHIFT_JENKINS_JVM_ARCH}" == "x86_64" || \
         ( "${OPENSHIFT_JENKINS_JVM_ARCH}" == "" && "${CONTAINER_MEMORY_IN_MB}" -ge 2048 ) ]]; then
       alternatives --set java $(alternatives --display java | grep $JAVA_VERSION | awk '/family.*x86_64/ { print $1; }')
+      alternatives --set javac $(alternatives --display javac | grep $JAVAC_VERSION | awk '/family.*x86_64/ { print $1; }')
     else
       alternatives --set java $(alternatives --display java | grep $JAVA_VERSION | awk '/family.*i386/ { print $1; }')
+      alternatives --set javac $(alternatives --display javac | grep $JAVAC_VERSION | awk '/family.*i386/ { print $1; }')
       export MALLOC_ARENA_MAX=${MALLOC_ARENA_MAX:-1}
     fi
 #set JVM for all other archs
 else
         alternatives --set java $(alternatives --display java | grep $JAVA_VERSION | awk '/family.*'$(uname -m)'/ { print $1; }')
->>>>>>> upstream/openshift-3.11
+        alternatives --set javac $(alternatives --display javac | grep $JAVAC_VERSION | awk '/family.*'$(uname -m)'/ { print $1; }')
 fi
 
 echo "OPENSHIFT_JENKINS_JVM_ARCH='${OPENSHIFT_JENKINS_JVM_ARCH}', CONTAINER_MEMORY_IN_MB='${CONTAINER_MEMORY_IN_MB}', using $(readlink /etc/alternatives/java)"
 
-shopt -s nocasematch
-if [[ -z "${SKIP_NO_PROXY_DEFAULT}" || \
-    "${SKIP_NO_PROXY_DEFAULT}" != "false" ]]; then
+if [[ -z "${SKIP_NO_PROXY_DEFAULT}" ]]; then
   # we do not want jenkins svc or jenkins-jnlp svc
   # communication going through a http proxy
   # env vars to consider:
@@ -74,7 +69,6 @@ if [[ -z "${SKIP_NO_PROXY_DEFAULT}" || \
     export NO_PROXY=$jenkins_http_host,$jnlp_http_host,$NO_PROXY
   fi
 fi
-shopt -u nocasematch
 
 # Configure the slave image
 source /usr/local/bin/configure-slave
@@ -125,15 +119,10 @@ if [[ $(echo "$@" | awk '{print NF}') -gt 1 ]]; then
     fi
   fi
 
-  #NOTE: The following default options are deprecated with java 11. We disable them for all, including java-1.8
   if [[ -z "${JAVA_TOOL_OPTIONS}" ]]; then
     # these options will automatically be picked up by any JVM process but can
     # be overridden on that process' command line.
-<<<<<<< HEAD
-    #JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Dsun.zip.disableMemoryMapping=true"
-=======
     # JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Dsun.zip.disableMemoryMapping=true"
->>>>>>> upstream/openshift-3.11
     export JAVA_TOOL_OPTIONS
   fi
 
@@ -195,7 +184,7 @@ if [[ $(echo "$@" | awk '{print NF}') -gt 1 ]]; then
   read -a JNLP_JAVA_OVERRIDES_ARRAY <<< "$JNLP_JAVA_OVERRIDES"
 
   set -x
-  cd ${JENKINS_DIR} && exec java -Duser.home=${HOME} $JNLP_JAVA_OPTIONS \
+  cd ${JENKINS_DIR} && exec java $JNLP_JAVA_OPTIONS \
                                  "${JNLP_JAVA_OVERRIDES_ARRAY[@]}" \
                                  -cp $JAR hudson.remoting.jnlp.Main \
                                  -headless $PARAMS "$@"
